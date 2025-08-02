@@ -1,77 +1,110 @@
-import sqlite3
-
-# Connect globally
-conn = sqlite3.connect("db/inventory.db")
-cursor = conn.cursor()
-
-
-# create a new product
-def create(name, category, color, quantity, price):
-    cursor.execute("""
-        INSERT INTO products (name, category, color, quantity, price)
-        VALUES (?, ?, ?, ?, ?)
-    """, (name, category, color, quantity, price))
-    conn.commit()
-
-# Fetch a single product by ID
-def read(product_ids=None):
-    if product_ids is None:
-        # Read all products
-        cursor.execute("SELECT * FROM products")
-        return cursor.fetchall()
-    
-    elif isinstance(product_ids, int):
-        # Read one product by ID
-        cursor.execute("SELECT * FROM products WHERE id = ?", (product_ids,))
-        return cursor.fetchone()
-    
-    elif isinstance(product_ids, list):
-        # Read multiple specific IDs
-        placeholders = ','.join('?' for _ in product_ids)
-        query = f"SELECT * FROM products WHERE id IN ({placeholders})"
-        cursor.execute(query, product_ids)
-        return cursor.fetchall()
-
-#update any field of a product
-def update(product_id, field, value):
-    cursor.execute(f"UPDATE products SET {field} = ? WHERE id = ?", (value, product_id))
-    conn.commit()
-
-# Remove a product by ID
-def delete(product_id):
-    cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
-    conn.commit()
-
-# find products by specific criteria
-def filters(field, operator, value):
-    query = f"SELECT * FROM products WHERE {field} {operator} ?"
-    cursor.execute(query, (value,))
-    return cursor.fetchall()
-
-# sort by any field
-def sort(field, descending=False):
-    order = "DESC" if descending else "ASC"
-    cursor.execute(f"SELECT * FROM products ORDER BY {field} {order}")
-    return cursor.fetchall()
-
-# copy an existing product
-def replicate(product_id):
-    product = read(product_id)
-    if product:
-        _, name, category, color, quantity, price = product
-        create(name, category, color, quantity, price)
+import os
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
+from langchain.output_parsers import PydanticOutputParser
+from utils.utils import transcribe_audio
+from utils.models import Action, DBCommand
+from db.db import create, update, read, delete, filters
 
 
-if __name__ == "__main__":
-	print("Read item 3.")
-	print(read(3))
+
+# *******************************
+# Gemini API key
+if "GOOGLE_API_KEY" not in os.environ:
+	os.environ["GOOGLE_API_KEY"] = "YOUR_GOOGLE_API_KEY_HERE"
+
+
+#instantiate gemini
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.0)
+
+def get_intent(command: str) -> DBCommand:
+	# to validatee the llm output
+	parser = PydanticOutputParser(pydantic_object=DBCommand)
+
+	# Prompt template
+	prompt = PromptTemplate(
+		  input_variables=["command"],
+		  template="""
+	You are a helpful assistant that extracts structured database commands from natural language.
+
+	User command: {command}
+
+	{format_instructions}
+	""",
+		  partial_variables={"format_instructions": parser.get_format_instructions()},
+	)
 	
-	print("\nRead the times 3, 19, 20.")
-	print(read([3, 19, 20]))
-	
-	print("\nFind products that cost less than 50.")
-	print(filter("category", "<", ""))
-	
+	chain = prompt | llm | parser
+	output = chain.invoke({"command": command})
+	return output
+
+def execute_command(cmd: DBCommand) -> dict:
+    try:
+        # READ
+        if cmd.action == Action.read:
+            if cmd.row is not None:
+                result = read(cmd.row)
+                return {"status": "success", "result": result}
+            else:
+                result = read()
+                return {"status": "success", "result": result}
+        
+        # UPDATE
+        elif cmd.action == Action.update:
+            if cmd.row is not None and cmd.field and cmd.value is not None:
+                update(cmd.row, cmd.field, cmd.value)
+                return {
+                    "status": "success",
+                    "message": f"Row {cmd.row} updated: {cmd.field} = {cmd.value}"
+                }
+            else:
+                return {"status": "error", "message": "Missing arguments for update"}
+        
+        # CREATE
+        elif cmd.action == Action.create:
+            return {"status": "todo", "message": "Creation logic is not yet implemented."}
+
+        # DELETE
+        elif cmd.action == Action.delete:
+            if cmd.row is not None:
+                delete(cmd.row)
+                return {"status": "success", "message": f"Row {cmd.row} deleted"}
+            else:
+                return {"status": "error", "message": "Row ID required for delete"}
+
+        # FILTER
+        elif cmd.action == Action.filters:
+            if cmd.field and cmd.operator and cmd.value is not None:
+                result = filters(cmd.field, cmd.operator.value, cmd.value)
+                return {"status": "success", "result": result}
+            else:
+                return {"status": "error", "message": "Filtering requires field, operator, and value"}
+
+        # SORT
+        elif cmd.action == Action.sort:
+            if cmd.field:
+                result = sort(cmd.field)
+                return {"status": "success", "result": result}
+            else:
+                return {"status": "error", "message": "Field required for sorting"}
+
+        # REPLICATE
+        elif cmd.action == Action.replicate:
+            if cmd.row is not None:
+                replicate(cmd.row)
+                return {"status": "success", "message": f"Row {cmd.row} replicated"}
+            else:
+                return {"status": "error", "message": "Row ID required for replicate"}
+
+        else:
+            return {"status": "error", "message": f"Unsupported action: {cmd.action}"}
+
+    except Exception as e:
+        return {"status": "error", "message": f"Exception occurred: {str(e)}"}
+
+
+
 	
 	
 	
