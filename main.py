@@ -1,5 +1,5 @@
 from utils.tools import get_intent, execute_command
-
+from utils.utils import transcribe_audio
 
 
 if __name__ == "__main__":
