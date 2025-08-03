@@ -1,5 +1,5 @@
-import whisper
 from gtts import gTTS
+import whisper
 
 model = whisper.load_model("base")
 

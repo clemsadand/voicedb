@@ -5,7 +5,7 @@ from langchain.chains import LLMChain
 from langchain.output_parsers import PydanticOutputParser
 from utils.utils import transcribe_audio
 from utils.models import Action, DBCommand
-from db.db import create, update, read, delete, filters
+from db.db import create, update, read, delete, filters, sort, replicate
 
 
 
@@ -26,7 +26,14 @@ def get_intent(command: str) -> DBCommand:
 	prompt = PromptTemplate(
 		  input_variables=["command"],
 		  template="""
-	You are a helpful assistant that extracts structured database commands from natural language.
+	You are a helpful assistant that extracts structured database commands from natural language user requests.
+
+	Extract the correct JSON structure for the database operation below. Only output the JSON, and make sure to follow these rules:
+	- The `row` field must be either a single integer (e.g. 4) or a list of integers (e.g. [1, 3, 5]).
+	- Never use strings like colors, names, or labels as the `row` value.
+	- If no row is specified, `row` should be None.
+	- The `action` must be one of: create, read, update, delete, filter, sort, replicate.
+	- The `operator` must be one of: =, <, <=, >, >=, !=, LIKE, None.
 
 	User command: {command}
 
@@ -34,6 +41,7 @@ def get_intent(command: str) -> DBCommand:
 	""",
 		  partial_variables={"format_instructions": parser.get_format_instructions()},
 	)
+
 	
 	chain = prompt | llm | parser
 	output = chain.invoke({"command": command})
