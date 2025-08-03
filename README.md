@@ -18,7 +18,7 @@
 
 ```bash
 .
-├── app.py                   # Streamlit app interface
+├── app.py                   # Flask app 
 ├── main.py                  # CLI interface (optional)
 ├── db/
 │   ├── create_db.py         # Script to initialize the database
@@ -29,7 +29,7 @@
 │   ├── models.py            # Pydantic models for command schema
 │   └── utils.py             # Helper functions
 ├── test/                    # Additional audio samples
-├── index.html               # Optional front-end template
+├── templates/               # Optional front-end template
 ├── README.md                # You are here
 ```
 
