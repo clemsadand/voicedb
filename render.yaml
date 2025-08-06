@@ -17,4 +17,4 @@ services:
     disk:
       name: voicedb-data
       mountPath: /opt/render/project/src/db
-      sizeGB: 1
+      sizeGB: 0.2
