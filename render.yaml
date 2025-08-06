@@ -11,10 +11,9 @@ services:
     plan: starter
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: GOOGLE_API_KEY
-        sync: false  # Set this in Render dashboard
+        value: 3.11.5
+      
     disk:
       name: voicedb-data
       mountPath: /opt/render/project/src/db
-      sizeGB: 0.2
+      sizeGB: 0.5

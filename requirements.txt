@@ -22,7 +22,5 @@ requests==2.31.0
 urllib3==2.1.0
 # For production deployment
 gunicorn==21.2.0
-# Security (optional but recommended for production)
-cryptography==41.0.8
 # Typing extensions (for older Python versions)
 typing-extensions==4.8.0
