@@ -1,6 +1,7 @@
 import sqlite3
 import threading
 from contextlib import contextmanager
+import pandas as pd
 
 # Thread-local storage for database connections
 _local = threading.local()
@@ -162,45 +163,35 @@ def replicate(product_id):
         return cursor.lastrowid
 
 # Get database statistics
-def get_stats():
-    """Get database statistics"""
-    with get_cursor() as cursor:
-        stats = {}
-        
-        # Total products
-        cursor.execute("SELECT COUNT(*) as total FROM products")
-        stats['total_products'] = cursor.fetchone()['total']
-        
-        # Products by category
-        cursor.execute("""
-            SELECT category, COUNT(*) as count 
-            FROM products 
-            GROUP BY category 
-            ORDER BY count DESC
-        """)
-        stats['by_category'] = cursor.fetchall()
-        
-        # Products by color
-        cursor.execute("""
-            SELECT color, COUNT(*) as count 
-            FROM products 
-            GROUP BY color 
-            ORDER BY count DESC
-        """)
-        stats['by_color'] = cursor.fetchall()
-        
-        # Price statistics
-        cursor.execute("""
-            SELECT 
-                MIN(price) as min_price,
-                MAX(price) as max_price,
-                AVG(price) as avg_price,
-                SUM(quantity * price) as total_value
-            FROM products
-        """)
-        stats['price_stats'] = cursor.fetchone()
-        
-        return stats
+#def get_connection():
+#    return sqlite3.connect(DB_PATH)
+
+def get_overall_stats():
+    with get_connection() as conn:
+        df = pd.read_sql("SELECT * FROM products", conn)
+        total_products = len(df)
+        avg_price = df["price"].mean()
+        total_value = (df["price"] * df["quantity"]).sum()
+        avg_quantity = df["quantity"].mean()
+        return {
+            "total_products": total_products,
+            "average_price": round(avg_price, 2),
+            "total_inventory_value": round(total_value, 2),
+            "average_quantity": round(avg_quantity, 2)
+        }
+
+def get_category_stats():
+    with get_connection() as conn:
+        df = pd.read_sql("SELECT * FROM products", conn)
+        grouped = df.groupby("category").agg(
+            product_count=("id", "count"),
+            total_value=("price", lambda x: (x * df.loc[x.index, "quantity"]).sum()),
+            avg_price=("price", "mean"),
+            most_common_color=("color", lambda x: x.mode().iloc[0] if not x.mode().empty else None)
+        )
+        grouped = grouped.round(2).reset_index()
+        return grouped.to_dict(orient="records")
+
 
 # Close all connections (useful for cleanup)
 def close_connections():

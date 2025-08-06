@@ -70,75 +70,64 @@ def health_check():
 
 @app.route("/api/transcribe", methods=["POST"])
 def transcribe():
-    print("=== TRANSCRIBE ENDPOINT CALLED ===")
-    cleanup_old_files()  # clean older files
-    
-    if "audio" not in request.files:
+    if "audio_recording" not in request.files:
         return jsonify({"success": False, "error": "No audio file provided"}), 400
-    
-    files = request.files["audio"]
-    lang = request.form.get("lang", "en")
-    
-    print(f"Received file: {files.filename}, Language: {lang}")
-    
-    # validate file
-    if files.filename == "":
-        return jsonify({"success": False, "error": "No file selected"}), 400
-        
-    print("\nFile is valide ...\n")
-    
-    if files and allowed_file(files.filename):
-        file_extension = files.filename.rsplit(".", 1)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+
+    recording = request.files["audio_recording"]
+
+    if recording.filename == "":
+        return jsonify({"success": False, "error": "No selected file."}), 400
+
+    filepath = None # Initialize filepath to None
+    try:
+        # 1. Generate a unique, secure filename
+        original_filename = secure_filename(recording.filename)
+        file_extension = os.path.splitext(original_filename)[1] # Get the original extension (e.g., .webm)
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
         
-        files.save(filepath)
-        print(f"File saved at {filepath}")
-        
-        #transcription = transcribe_audio(filepath)
-        result = model.transcribe(filepath, language="en", task="transcribe")
-        transcription = result["text"]
-        
-        print("\n", result["text"])
-		
-        print(f"Transcription result: '{transcription}'")
-        
-        # Clean up file
-        if os.path.exists(filepath):
-            os.remove(filepath)
-        
-        return jsonify({
-            "success": True, 
-            "transcription": transcription, 
-            #"language": lang
-        })
-    else:
-        return jsonify({
-            "success": False,
-            "error": f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
-        }), 400
-        
+        # 2. Save the file
+        recording.save(filepath)
+        print(f"File saved temporarily to: {filepath}")
 
-@app.route("/api/chat", methods=["POST"])
-def chat():
-	"""Process text-based commands"""
-	try:
-		data = request.get_json()
-		if not data or "message" not in data:
-			return jsonify({"success": False, "error": "No message"}), 400
-			user_message = data["message"]
-			
-		db_command = get_intent(user_message)
-		result = execute_command(db_command)
-		response_data = format_response(result, user_message)
+        # 3. Transcribe the audio (with error handling)
+        # Note: You need to implement your own robust error handling for transcribe_audio
+        transcription = transcribe_audio(filepath) 
+        
+        return jsonify({"success": True, "transcription": transcription})
+
+    except Exception as e:
+        # Catch errors from transcription or other issues
+        print(f"An error occurred during transcription: {e}")
+        return jsonify({"success": False, "error": "Could not process audio."}), 500
+
+    finally:
+        # 4. CRITICAL: Clean up the temporary file
+        if filepath and os.path.exists(filepath):
+            os.remove(filepath)
+            print(f"Temporary file deleted: {filepath}")
 		
-		return jsonify(response_data)
-	except Exception as e:
-		print(f"❌ Error in process_text_command: {str(e)}")
-		return jsonify({
+@app.route("/api/chat", methods=["POST"])	
+def chat():
+    """Process text-based commands"""
+    try:
+        data = request.get_json()
+        if not data or "message" not in data:
+            return jsonify({"success": False, "error": "No message "})
+        
+        user_message = data["message"]
+        db_command = get_intent(user_message)
+        
+        result = execute_command(db_command)
+        response_data = format_response(result, user_message)
+        return jsonify(response_data)
+    except Exception as e:
+        print(f"❌ Error in process_text_command: {str(e)}")
+        return jsonify({
             "status": "error", 
             "message": f"Chat processing failed: {str(e)}"
         })
+    
 
 ##****************************************************************************************
 @app.route('/api/products/<int:product_id>', methods=['GET'])
@@ -214,6 +203,9 @@ def delete_product(product_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+
+
 def format_product(product_row):
     """Convert database row to dictionary"""
     if not product_row:
@@ -269,6 +261,18 @@ def format_response(result, original_command):
                         "data": [formatted] if formatted else [],
                         "original_command": original_command
                     }
+            elif "overview" in result and result["overview"]:
+            	print()
+            	print(result.get("overall"))
+            	print()
+            	print(result.get("by_category"))
+            	print()
+            	return {
+            		"status": "success", 
+            		"overall": result.get("overall"), 
+            		"by_category": result.get("by_category"),
+            		"original_command": original_command,
+            	}
             else:
                 # Handle other operations (create, update, delete)
                 return {
@@ -328,7 +332,7 @@ def format_response_text(result, original_command):
 
 if __name__ == '__main__':
     print("🚀 Starting Flask Backend Server...")
-    print("📡 Available endpoints:")
+    print("\n📡 Available endpoints:")
     print("   - POST /api/chat (text commands)")
     print("   - GET /api/products (all products)")
     print("   - GET /api/products/<id> (specific product)")
@@ -338,4 +342,4 @@ if __name__ == '__main__':
     print("   - GET /api/health (health check)")
     
     # Run in debug mode for development
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
