@@ -10,9 +10,8 @@ from db.db import create, update, read, delete, filters, sort, replicate, get_ov
 
 # *******************************
 # Gemini API key
-# if "GOOGLE_API_KEY" not in os.environ:
-# 	os.environ["GOOGLE_API_KEY"] = "AIzaSyDqgHQquOEM-bchfzBfh38tHlDIY5_U7pI"
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDqgHQquOEM-bchfzBfh38tHlDIY5_U7pI"
+if "GOOGLE_API_KEY" not in os.environ:
+	os.environ["GOOGLE_API_KEY"] = "YOUR_GOOGLE_API_KEY"
 
 #instantiate gemini
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.0)
