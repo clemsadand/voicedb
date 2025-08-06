@@ -18,5 +18,5 @@ if __name__ == "__main__":
 	print()
 	print(cmd_to_db)
 	
-	print(execute_command(cmd_to_db))
+	#print(execute_command(cmd_to_db))
 

@@ -113,7 +113,7 @@ def chat():
     try:
         data = request.get_json()
         if not data or "message" not in data:
-            return jsonify({"success": False, "error": "No message "})
+            return jsonify({"success": False, "error": "No message provided"})
         
         user_message = data["message"]
         db_command = get_intent(user_message)
@@ -122,7 +122,7 @@ def chat():
         response_data = format_response(result, user_message)
         return jsonify(response_data)
     except Exception as e:
-        print(f"❌ Error in process_text_command: {str(e)}")
+        print(f"❌ Error in chat: {str(e)}")
         return jsonify({
             "status": "error", 
             "message": f"Chat processing failed: {str(e)}"
@@ -262,17 +262,18 @@ def format_response(result, original_command):
                         "original_command": original_command
                     }
             elif "overview" in result and result["overview"]:
-            	print()
-            	print(result.get("overall"))
-            	print()
-            	print(result.get("by_category"))
-            	print()
-            	return {
-            		"status": "success", 
-            		"overall": result.get("overall"), 
-            		"by_category": result.get("by_category"),
-            		"original_command": original_command,
-            	}
+                # Handle statistics results - FIXED THE TYPO HERE
+                print("\n📊 Statistics Result:")
+                print("Overview:", result.get("overview"))
+                print("By Category:", result.get("by_category"))
+                print()
+                return {
+                    "status": "success", 
+                    "overview": result.get("overview"),  # Fixed: was "overall"
+                    "by_category": result.get("by_category"),
+                    "original_command": original_command,
+                    "is_statistics": True  # Add flag to identify statistics responses
+                }
             else:
                 # Handle other operations (create, update, delete)
                 return {
@@ -342,4 +343,4 @@ if __name__ == '__main__':
     print("   - GET /api/health (health check)")
     
     # Run in debug mode for development
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    app.run(debug=False, host='0.0.0.0', port=5000, use_reloader=False)

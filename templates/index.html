@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoiceDB Assistant</title>
+    <title>🎙️ VoiceDB Assistant</title>
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 
 </head>
 <body data-theme="light">
     <header class="header">
-        <div class="logo">VoiceDB Assistant</div>
+        <div class="logo">🎙️ VoiceDB Assistant</div>
         <button class="theme-toggle" onclick="toggleTheme()">
             🌙 Dark Mode
         </button>
+        <button class="help-toggle" onclick="openHelpModal()">❓ Help</button>
     </header>
 
     <div class="chat-container">
@@ -46,6 +47,44 @@
             </div>
         </div>
     </div>
+	
+	<!-- Help Modal -->
+	<div id="helpModal" class="modal">
+	  <div class="modal-content">
+		<span class="close" onclick="closeHelpModal()">&times;</span>
+		<h2>👋 Welcome to VoiceDB Assistant</h2>
+		<p>This assistant lets you control a database using voice or text. You will be interacting with a dummy SQL database.</p>
+		
+		<h3>🎯 Supported Actions</h3>
+		<ul>
+		  <li><strong>📖 Read:</strong> <code>read</code> or <code>read row 5</code></li>
+		  <li><strong>✏️ Update:</strong> <code>update row 4 set color to red</code></li>
+		  <li><strong>➕ Create:</strong> <code>add a red chair in furniture with price 99 and quantity 10</code></li>
+		  <li><strong>❌ Delete:</strong> <code>delete row 8</code></li>
+		  <li><strong>🔍 Filter:</strong> <code>show all electronics where quantity > 10</code></li>
+		  <li><strong>↕️ Sort:</strong> <code>sort by price</code> or <code>sort by quantity</code></li>
+		  <li><strong🔁 Replicate:</strong> <code>duplicate row 3</code></li>
+		  <li><strong>📊 Stats:</strong> <code>show statistics</code>, <code>show KPIs</code>, or <code>summarize inventory</code></li>
+		</ul>
+		<h3>💡 What You Can Say:</h3>
+		<ul>
+		  <li><code>Update the quantity of row 3 to 15</code></li>
+		  <li><code>Delete row 5</code></li>
+		  <li><code>Filter products where price &gt; 100</code></li>
+		  <li><code>Give me stats</code></li>
+		</ul>
+
+		<h3>🎤 How to Use:</h3>
+		<ol>
+		  <li>Click the microphone to record your voice.</li>
+		  <li>Wait for it to transcribe your intent.</li>
+		  <li>Validate the transcription.</li>
+		  <li>The system will interpret and execute your command.</li>
+		</ol>
+
+		<p><bold>Tip:</bold> Try speaking naturally. If the system doesn’t understand, try being more specific. You can always type too!</p>
+	  </div>
+	</div>
 
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>

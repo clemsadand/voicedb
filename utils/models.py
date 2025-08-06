@@ -34,7 +34,7 @@ class DBCommand(BaseModel):
     field: Optional[str] = None
     value: Optional[Union[str, float, Product]] = None
     operator: Optional[Operator] = None
-    message: Optional[str] = "I just complted you will. Anything else."
+    message: Optional[str] = "I just completed you will. Anything else."
 
 class Status(BaseModel):
 	status: Literal["clear", "unclear"]
