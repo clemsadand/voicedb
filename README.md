@@ -17,16 +17,15 @@
 ```bash
 .
 ├── app.py                   # Flask app 
-├── main.py                  # CLI interface (optional)
+├── main.py                  # CLI interface
 ├── db/
 │   ├── create_db.py         # Script to initialize the database
 │   └── inventory.db         # SQLite database file
-├── dev_audio/               # Voice command test files
 ├── utils/
 │   ├── tools.py             # Core logic for executing parsed commands
 │   ├── models.py            # Pydantic models for command schema
 │   └── utils.py             # Helper functions
-├── test/                    # Additional audio samples
+├── test/                    # Voice command test files
 ├── templates/               # Optional front-end template
 ├── README.md                # You are here
 ```
@@ -51,3 +50,64 @@ Here are some examples of what you can say to the assistant:
   - SQLite (database)
   - Flask, JS, CSS & HTML
     
+
+---
+
+## 💻 Installing and Running the Project
+
+Follow these steps to get **VoiceDB Assistant** up and running on your local machine.
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/voicedb-assistant.git
+cd voicedb-assistant
+```
+
+### 2️⃣ Create and Activate a Virtual Environment (Optional)
+
+It’s best to keep dependencies isolated.
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3️⃣ Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4️⃣ Prepare the Database
+
+Run the script to generate the sample dataset.
+
+```bash
+python3 db/create_db.py
+```
+
+### 5️⃣ Run the Application
+
+#### ▶️ Option 1 — Run with Web Interface
+
+```bash
+python3 app.py
+```
+
+### 6️⃣ Access in Your Browser
+
+Open your browser and go to:
+
+```
+http://127.0.0.1:5000
+```
+
+✅ You can now chat with the assistant, use voice commands, and explore your database.
+
+#### ▶️ Option 2 — Run with Command-Line Interface
+```bash
+python3 main.py test/1.mp3
+```
+
