@@ -13,9 +13,10 @@ from dotenv import load_dotenv
 # Gemini API key
 if "GOOGLE_API_KEY" not in os.environ:
 	os.environ["GOOGLE_API_KEY"] = "YOUR_GOOGLE_API_KEY"
-else:
+elif:
 	os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
-
+else:
+	os.environ["GOOGLE_API_KEY"] = input("Enter your Google API KEY (get it from https://aistudio.google.com/)\n: ")
 
 
 #instantiate gemini
