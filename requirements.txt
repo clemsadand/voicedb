@@ -1,26 +1,15 @@
-# Core Flask Dependencies
 Flask==3.0.0
 Flask-CORS==4.0.0
 Werkzeug==3.0.1
-# OpenAI Whisper for Audio Transcription
 openai-whisper==20231117
-# Audio Processing
 pydub==0.25.1
-# Database - sqlite3 is built into Python, no need to install
 pandas==2.1.4
-# LangChain for AI Integration
 langchain==0.1.0
 langchain-google-genai==1.0.1
-# Data Validation
 pydantic==2.5.2
-# Environment Variables (optional but recommended)
 python-dotenv==1.0.0
-# Audio format support
 ffmpeg-python==0.2.0
-# Additional utilities
 requests==2.31.0
 urllib3==2.1.0
-# For production deployment
 gunicorn==21.2.0
-# Typing extensions (for older Python versions)
 typing-extensions==4.8.0
