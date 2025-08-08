@@ -12,13 +12,11 @@
 - 🖥️ **Interactive web UI** built with Flask, JS, CSS & HTML
 - 🌍 **Multilingual support** via Whisper (auto language detection)
 
----
-
 ## 📦 Project Structure
 
 ```bash
 .
-├── app.py                   # Streamlit app interface
+├── app.py                   # Flask app 
 ├── main.py                  # CLI interface (optional)
 ├── db/
 │   ├── create_db.py         # Script to initialize the database
@@ -29,7 +27,7 @@
 │   ├── models.py            # Pydantic models for command schema
 │   └── utils.py             # Helper functions
 ├── test/                    # Additional audio samples
-├── index.html               # Optional front-end template
+├── templates/               # Optional front-end template
 ├── README.md                # You are here
 ```
 
@@ -44,7 +42,6 @@ Here are some examples of what you can say to the assistant:
 | **Filter**              | "Show all books with quantity less than 10"                          |
 | **Sort**                | "Sort products by quantity in descending order"                      |
 | **Replicate**           | "Replicate row 3 three times"                                        |
-| **Multiple Conditions** | "Show items in category Electronics with quantity more than 5"       |
 
 ## 🛠️ Technologies Used
   - Python
