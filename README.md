@@ -66,8 +66,6 @@ cd voicedb-assistant
 
 ### 2️⃣ Create and Activate a Virtual Environment (Optional)
 
-It’s best to keep dependencies isolated.
-
 ```bash
 # Create virtual environment
 python3 -m venv venv
@@ -104,7 +102,7 @@ Open your browser and go to:
 http://127.0.0.1:5000
 ```
 
-✅ You can now chat with the assistant, use voice commands, and explore your database.
+You can now chat with the assistant, use voice commands, and explore your database.
 
 #### ▶️ Option 2 — Run with Command-Line Interface
 ```bash
